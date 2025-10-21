@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiSearch } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiGrid, FiList } from 'react-icons/fi';
 import NoteCard from '../components/NoteCard';
 import NoteModal from '../components/NoteModal';
 import NoteView from '../components/NoteView';
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [viewingNote, setViewingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
   useEffect(() => {
     fetchNotes();
@@ -186,14 +187,16 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex">
-      <Sidebar 
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-        notesCount={notesCount}
-      />
+    <div className="flex min-h-screen">
+      <div className="fixed left-0 top-16 bottom-0 z-40">
+        <Sidebar 
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+          notesCount={notesCount}
+        />
+      </div>
       
-      <div className="flex-1 px-8 py-8 bg-[#1f1c28]">
+      <div className="flex-1 ml-20 px-8 py-8 bg-[#1f1c28] min-h-screen">
         <div className="max-w-7xl mx-auto">
           {viewingNote ? (
             <NoteView 
@@ -232,15 +235,42 @@ const Dashboard = () => {
                       )}
                     </p>
                   </div>
-                  {activeCategory !== 'bin' && (
-                    <button
-                      onClick={handleCreateNote}
-                      className="btn-primary flex items-center space-x-2"
-                    >
-                      <FiPlus />
-                      <span>New Note</span>
-                    </button>
-                  )}
+                  <div className="flex items-center space-x-3">
+                    {/* View Toggle */}
+                    <div className="flex items-center bg-[#262a4a]/50 rounded-xl p-1">
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-lg transition-all ${
+                          viewMode === 'grid'
+                            ? 'bg-[#3B82F6] text-white'
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                        title="Grid View"
+                      >
+                        <FiGrid size={20} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-lg transition-all ${
+                          viewMode === 'list'
+                            ? 'bg-[#3B82F6] text-white'
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                        title="List View"
+                      >
+                        <FiList size={20} />
+                      </button>
+                    </div>
+                    {activeCategory !== 'bin' && (
+                      <button
+                        onClick={handleCreateNote}
+                        className="btn-primary flex items-center space-x-2"
+                      >
+                        <FiPlus />
+                        <span>New Note</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="relative max-w-md">
@@ -282,18 +312,27 @@ const Dashboard = () => {
                   </div>
                 </div>
               ) : activeCategory === 'bin' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'flex flex-col space-y-4'
+                }>
                   {filteredNotes.map((note) => (
                     <BinNoteCard
                       key={note.id}
                       note={note}
                       onRestore={handleRestoreNote}
                       onPermanentDelete={handlePermanentDelete}
+                      viewMode={viewMode}
                     />
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'flex flex-col space-y-4'
+                }>
                   {filteredNotes.map((note) => (
                     <NoteCard
                       key={note.id}
@@ -302,6 +341,7 @@ const Dashboard = () => {
                       onEdit={handleEditNote}
                       onDelete={handleDeleteNote}
                       onArchive={handleArchiveNote}
+                      viewMode={viewMode}
                     />
                   ))}
                 </div>

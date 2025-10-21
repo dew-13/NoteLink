@@ -2,7 +2,7 @@ import React from 'react';
 import { FiX, FiArchive } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 
-const NoteCard = ({ note, onEdit, onDelete, onView, onArchive }) => {
+const NoteCard = ({ note, onEdit, onDelete, onView, onArchive, viewMode = 'grid' }) => {
   const getCategoryColor = (category) => {
     const colors = {
       personal: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -13,6 +13,62 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onArchive }) => {
     };
     return colors[category] || 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   };
+
+  if (viewMode === 'list') {
+    return (
+      <div className="card relative group hover:scale-[1.01] transition-transform">
+        <div className="flex items-start justify-between gap-4">
+          <div onClick={() => onView ? onView(note) : onEdit(note)} className="cursor-pointer flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              {note.category && (
+                <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
+                  {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
+                </span>
+              )}
+              {note.isImportant && (
+                <FaStar className="text-yellow-400" size={16} title="Important" />
+              )}
+              <span className="text-xs text-gray-500">
+                {new Date(note.updatedAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-100 mb-2">
+              {note.title}
+            </h3>
+            <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">
+              {note.description || 'No description'}
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onArchive) onArchive(note.id);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-orange-500 p-2"
+              title="Archive note"
+            >
+              <FiArchive size={18} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(note.id);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-red-500 p-2"
+              title="Delete note"
+            >
+              <FiX size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card relative group hover:scale-105">
