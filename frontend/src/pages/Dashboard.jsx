@@ -2,33 +2,64 @@ import React, { useState, useEffect } from 'react';
 import { FiPlus, FiSearch } from 'react-icons/fi';
 import NoteCard from '../components/NoteCard';
 import NoteModal from '../components/NoteModal';
-import { getNotes, createNote, updateNote, deleteNote } from '../services/noteService';
+import NoteView from '../components/NoteView';
+import BinNoteCard from '../components/BinNoteCard';
+import Sidebar from '../components/Sidebar';
+import { getNotes, createNote, updateNote, deleteNote, getBinNotes, restoreNote, permanentlyDeleteNote, archiveNote } from '../services/noteService';
 
 const Dashboard = () => {
   const [notes, setNotes] = useState([]);
+  const [binNotes, setBinNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState(null);
+  const [viewingNote, setViewingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchNotes();
+    fetchBinNotes();
   }, []);
 
   useEffect(() => {
-    if (searchQuery) {
-      const filtered = notes.filter(
-        (note) =>
-          note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          note.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (activeCategory === 'bin') {
+      // Filter bin notes
+      let filtered = binNotes;
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (note) =>
+            note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            note.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
       setFilteredNotes(filtered);
     } else {
-      setFilteredNotes(notes);
+      // Filter regular notes
+      let filtered = notes;
+
+      // Filter by category
+      if (activeCategory === 'important') {
+        // Show all important notes regardless of category
+        filtered = filtered.filter((note) => note.isImportant === true);
+      } else if (activeCategory !== 'all') {
+        filtered = filtered.filter((note) => note.category === activeCategory);
+      }
+
+      // Filter by search query
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (note) =>
+            note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            note.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredNotes(filtered);
     }
-  }, [searchQuery, notes]);
+  }, [searchQuery, notes, binNotes, activeCategory]);
 
   const fetchNotes = async () => {
     try {
@@ -46,14 +77,33 @@ const Dashboard = () => {
     }
   };
 
+  const fetchBinNotes = async () => {
+    try {
+      const data = await getBinNotes();
+      setBinNotes(data.notes || []);
+    } catch (error) {
+      console.error('Error fetching bin notes:', error);
+    }
+  };
+
   const handleCreateNote = () => {
     setSelectedNote(null);
+    setViewingNote(null);
     setIsModalOpen(true);
   };
 
   const handleEditNote = (note) => {
     setSelectedNote(note);
+    setViewingNote(null);
     setIsModalOpen(true);
+  };
+
+  const handleViewNote = (note) => {
+    setViewingNote(note);
+  };
+
+  const handleCloseView = () => {
+    setViewingNote(null);
   };
 
   const handleSaveNote = async (noteData) => {
@@ -75,11 +125,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteNote = async (id) => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
+    if (window.confirm('Move this note to bin?')) {
       try {
         setError('');
         await deleteNote(id);
         await fetchNotes();
+        await fetchBinNotes();
       } catch (error) {
         console.error('Error deleting note:', error);
         setError('Failed to delete note. Please try again.');
@@ -87,65 +138,178 @@ const Dashboard = () => {
     }
   };
 
+  const handleRestoreNote = async (id) => {
+    try {
+      setError('');
+      await restoreNote(id);
+      await fetchNotes();
+      await fetchBinNotes();
+    } catch (error) {
+      console.error('Error restoring note:', error);
+      setError('Failed to restore note. Please try again.');
+    }
+  };
+
+  const handlePermanentDelete = async (id) => {
+    try {
+      setError('');
+      await permanentlyDeleteNote(id);
+      await fetchBinNotes();
+    } catch (error) {
+      console.error('Error permanently deleting note:', error);
+      setError('Failed to permanently delete note. Please try again.');
+    }
+  };
+
+  const handleArchiveNote = async (id) => {
+    try {
+      setError('');
+      await archiveNote(id);
+      await fetchNotes();
+    } catch (error) {
+      console.error('Error archiving note:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.message || 'Failed to archive note. Please try again.';
+      setError(errorMsg);
+    }
+  };
+
+  // Calculate notes count by category
+  const notesCount = {
+    all: notes.length,
+    personal: notes.filter(n => n.category === 'personal').length,
+    work: notes.filter(n => n.category === 'work').length,
+    ideas: notes.filter(n => n.category === 'ideas').length,
+    important: notes.filter(n => n.isImportant === true).length,
+    archived: notes.filter(n => n.category === 'archived').length,
+    bin: binNotes.length,
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">My Notes</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="relative flex-1 max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-10"
-            />
-          </div>
-          
-          <button
-            onClick={handleCreateNote}
-            className="btn-primary flex items-center space-x-2"
-          >
-            <FiPlus />
-            <span>New Note</span>
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
-      ) : filteredNotes.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
-            {searchQuery
-              ? 'No notes found matching your search.'
-              : 'No notes yet. Create your first note!'}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNotes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
+    <div className="flex">
+      <Sidebar 
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        notesCount={notesCount}
+      />
+      
+      <div className="flex-1 px-8 py-8 bg-[#1f1c28]">
+        <div className="max-w-7xl mx-auto">
+          {viewingNote ? (
+            <NoteView 
+              note={viewingNote}
+              onClose={handleCloseView}
               onEdit={handleEditNote}
               onDelete={handleDeleteNote}
+              onArchive={handleArchiveNote}
             />
-          ))}
+          ) : (
+            <>
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-100 mb-2">
+                      {activeCategory === 'all' 
+                        ? 'All Notes' 
+                        : activeCategory === 'personal'
+                        ? '📝 Personal'
+                        : activeCategory === 'work'
+                        ? '💼 Work'
+                        : activeCategory === 'ideas'
+                        ? '💡 Ideas'
+                        : activeCategory === 'important'
+                        ? '⭐ Important'
+                        : activeCategory === 'archived'
+                        ? '📦 Archived'
+                        : activeCategory === 'bin'
+                        ? '🗑️ Bin'
+                        : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
+                    </h1>
+                    <p className="text-gray-400 text-sm">
+                      {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'} found
+                      {activeCategory === 'bin' && filteredNotes.length > 0 && (
+                        <span className="ml-2 text-red-400">• Notes will be permanently deleted after 30 days</span>
+                      )}
+                    </p>
+                  </div>
+                  {activeCategory !== 'bin' && (
+                    <button
+                      onClick={handleCreateNote}
+                      className="btn-primary flex items-center space-x-2"
+                    >
+                      <FiPlus />
+                      <span>New Note</span>
+                    </button>
+                  )}
+                </div>
+                
+                <div className="relative max-w-md">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiSearch className="text-gray-500" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search notes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="input-field pl-11"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="mb-4 bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-xl">
+                  {error}
+                </div>
+              )}
+
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                </div>
+              ) : filteredNotes.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="bg-gradient-to-br from-[#262a4a]/50 to-[#1e2139]/50 backdrop-blur-sm rounded-2xl p-12 border border-gray-700/30">
+                    <p className="text-gray-400 text-lg">
+                      {searchQuery
+                        ? 'No notes found matching your search.'
+                        : activeCategory === 'bin'
+                        ? 'Bin is empty.'
+                        : activeCategory !== 'all'
+                        ? `No notes in ${activeCategory} category yet.`
+                        : 'No notes yet. Create your first note!'}
+                    </p>
+                  </div>
+                </div>
+              ) : activeCategory === 'bin' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredNotes.map((note) => (
+                    <BinNoteCard
+                      key={note.id}
+                      note={note}
+                      onRestore={handleRestoreNote}
+                      onPermanentDelete={handlePermanentDelete}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onView={handleViewNote}
+                      onEdit={handleEditNote}
+                      onDelete={handleDeleteNote}
+                      onArchive={handleArchiveNote}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       <NoteModal
         note={selectedNote}

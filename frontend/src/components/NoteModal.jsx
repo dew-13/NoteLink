@@ -1,88 +1,147 @@
 import React, { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiStar } from 'react-icons/fi';
+import { FaStar } from 'react-icons/fa';
 
 const NoteModal = ({ note, isOpen, onClose, onSave }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('personal');
+  const [isImportant, setIsImportant] = useState(false);
 
   useEffect(() => {
     if (note) {
       setTitle(note.title || '');
       setDescription(note.description || '');
+      setCategory(note.category || 'personal');
+      setIsImportant(note.isImportant || false);
     } else {
       setTitle('');
       setDescription('');
+      setCategory('personal');
+      setIsImportant(false);
     }
   }, [note, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ title, description });
+    onSave({ title, description, category, isImportant });
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {note ? 'Edit Note' : 'Create New Note'}
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-gradient-to-br from-[#262a4a]/95 to-[#1e2139]/95 backdrop-blur-xl rounded-2xl max-w-2xl w-full border border-gray-700/50 shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
+          <h2 className="text-2xl font-bold text-gray-100">
+            {note ? 'Edit Note' : 'Create Note'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-gray-400 hover:text-gray-200"
           >
             <FiX size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Title */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+              Title *
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder-gray-500"
+              placeholder="Enter note title..."
+              required
+              autoFocus
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder-gray-500 resize-none"
+              placeholder="Write your note here..."
+              rows={5}
+            />
+          </div>
+
+          {/* Category and Important */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Category */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Title *
+              <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
+                Category
               </label>
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="input-field"
-                placeholder="Enter note title"
-                required
-              />
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              >
+                <option value="personal">📝 Personal</option>
+                <option value="work">💼 Work</option>
+                <option value="ideas">💡 Ideas</option>
+              </select>
             </div>
 
+            {/* Important */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Important
               </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="input-field min-h-[200px] resize-y"
-                placeholder="Enter note description"
-                rows={8}
-              />
+              <button
+                type="button"
+                onClick={() => setIsImportant(!isImportant)}
+                className={`w-full px-4 py-3 rounded-xl border transition-all flex items-center justify-center space-x-2 ${
+                  isImportant
+                    ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
+                    : 'bg-[#1a1d35]/60 border-gray-700/50 text-gray-400 hover:border-yellow-500/30'
+                }`}
+              >
+                {isImportant ? (
+                  <>
+                    <FaStar className="text-lg" />
+                    <span>Important</span>
+                  </>
+                ) : (
+                  <>
+                    <FiStar className="text-lg" />
+                    <span>Mark Important</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="btn-secondary"
+              className="flex-1 px-6 py-3 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 font-medium rounded-xl transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
               disabled={!title.trim()}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-medium rounded-xl transition-all shadow-lg shadow-primary-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {note ? 'Update Note' : 'Create Note'}
+              {note ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

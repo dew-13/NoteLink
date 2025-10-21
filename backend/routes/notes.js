@@ -22,10 +22,19 @@ router.get('/', async (req, res) => {
 
     const notes = [];
     snapshot.forEach(doc => {
-      notes.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const noteData = doc.data();
+      // Filter out deleted notes (handle existing notes without isDeleted field)
+      if (noteData.isDeleted !== true) {
+        notes.push({
+          id: doc.id,
+          ...noteData,
+          // Set defaults for fields that might not exist in older notes
+          category: noteData.category || 'personal',
+          isImportant: noteData.isImportant || false,
+          isDeleted: noteData.isDeleted || false,
+          deletedAt: noteData.deletedAt || null
+        });
+      }
     });
 
     res.status(200).json({
@@ -47,6 +56,57 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Failed to fetch notes',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
+ * @route   GET /api/notes/bin
+ * @desc    Get all deleted notes for the authenticated user
+ * @access  Private
+ */
+router.get('/bin/all', async (req, res) => {
+  try {
+    const notesRef = db.collection('notes');
+    const snapshot = await notesRef
+      .where('userId', '==', req.user.uid)
+      .get();
+
+    const notes = [];
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    snapshot.forEach(doc => {
+      const noteData = doc.data();
+      
+      // Only include deleted notes
+      if (noteData.isDeleted === true && noteData.deletedAt) {
+        const deletedDate = new Date(noteData.deletedAt);
+        
+        // Only include notes deleted within the last 30 days
+        if (deletedDate >= thirtyDaysAgo) {
+          notes.push({
+            id: doc.id,
+            ...noteData
+          });
+        }
+      }
+    });
+
+    // Sort by deletedAt descending (most recent first)
+    notes.sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+
+    res.status(200).json({
+      status: 'success',
+      count: notes.length,
+      notes
+    });
+  } catch (error) {
+    console.error('Get bin notes error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch deleted notes',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
@@ -122,6 +182,10 @@ router.post(
         userId: req.user.uid,
         title,
         description: description || '',
+        category: req.body.category || 'personal',
+        isImportant: req.body.isImportant || false,
+        isDeleted: false,
+        deletedAt: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -217,7 +281,7 @@ router.put(
 
 /**
  * @route   DELETE /api/notes/:id
- * @desc    Delete a note
+ * @desc    Soft delete a note (move to bin)
  * @access  Private
  */
 router.delete('/:id', async (req, res) => {
@@ -242,17 +306,166 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    await noteRef.delete();
+    // Soft delete - mark as deleted
+    await noteRef.update({
+      isDeleted: true,
+      deletedAt: new Date().toISOString()
+    });
 
     res.status(200).json({
       status: 'success',
-      message: 'Note deleted successfully'
+      message: 'Note moved to bin'
     });
   } catch (error) {
     console.error('Delete note error:', error);
     res.status(500).json({
       status: 'error',
       message: 'Failed to delete note'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/notes/:id/archive
+ * @desc    Archive a note
+ * @access  Private
+ */
+router.post('/:id/archive', async (req, res) => {
+  try {
+    console.log('Archive route called for note ID:', req.params.id);
+    console.log('User ID:', req.user.uid);
+    
+    const noteRef = db.collection('notes').doc(req.params.id);
+    const noteDoc = await noteRef.get();
+
+    if (!noteDoc.exists) {
+      console.log('Note not found:', req.params.id);
+      return res.status(404).json({
+        status: 'error',
+        message: 'Note not found'
+      });
+    }
+
+    const noteData = noteDoc.data();
+    console.log('Note data:', noteData);
+
+    // Check if the note belongs to the user
+    if (noteData.userId !== req.user.uid) {
+      console.log('Access denied - note userId:', noteData.userId, 'user uid:', req.user.uid);
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied'
+      });
+    }
+
+    // Archive the note by changing category to archived
+    await noteRef.update({
+      category: 'archived',
+      updatedAt: new Date().toISOString()
+    });
+
+    console.log('Note archived successfully:', req.params.id);
+    res.status(200).json({
+      status: 'success',
+      message: 'Note archived successfully'
+    });
+  } catch (error) {
+    console.error('Archive note error:', error);
+    console.error('Error details:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to archive note',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
+ * @route   POST /api/notes/:id/restore
+ * @desc    Restore a note from bin
+ * @access  Private
+ */
+router.post('/:id/restore', async (req, res) => {
+  try {
+    const noteRef = db.collection('notes').doc(req.params.id);
+    const noteDoc = await noteRef.get();
+
+    if (!noteDoc.exists) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Note not found'
+      });
+    }
+
+    const noteData = noteDoc.data();
+
+    // Check if the note belongs to the user
+    if (noteData.userId !== req.user.uid) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied'
+      });
+    }
+
+    // Restore the note
+    await noteRef.update({
+      isDeleted: false,
+      deletedAt: null,
+      updatedAt: new Date().toISOString()
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Note restored successfully'
+    });
+  } catch (error) {
+    console.error('Restore note error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to restore note'
+    });
+  }
+});
+
+/**
+ * @route   DELETE /api/notes/:id/permanent
+ * @desc    Permanently delete a note
+ * @access  Private
+ */
+router.delete('/:id/permanent', async (req, res) => {
+  try {
+    const noteRef = db.collection('notes').doc(req.params.id);
+    const noteDoc = await noteRef.get();
+
+    if (!noteDoc.exists) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Note not found'
+      });
+    }
+
+    const noteData = noteDoc.data();
+
+    // Check if the note belongs to the user
+    if (noteData.userId !== req.user.uid) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied'
+      });
+    }
+
+    // Permanently delete
+    await noteRef.delete();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Note permanently deleted'
+    });
+  } catch (error) {
+    console.error('Permanent delete note error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to permanently delete note'
     });
   }
 });

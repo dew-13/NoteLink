@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 // Import routes
 const authRoutes = require('./routes/auth');
 const noteRoutes = require('./routes/notes');
+const chatbotRoutes = require('./routes/chatbot');
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -33,6 +34,7 @@ app.get('/api/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // 404 handler
 app.use((req, res) => {
