@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiLogOut, FiFileText, FiUser } from 'react-icons/fi';
+import { FiUser, FiMenu } from 'react-icons/fi';
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick }) => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,38 +18,33 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] shadow-lg border-b border-blue-400/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-16 relative">
-          <Link to="/" className="flex items-center group">
-            <span className="text-xl font-bold text-white">
-              NoteLink
-            </span>
-          </Link>
+    <nav className="bg-black shadow-lg border-b border-gray-800">
+      <div className="w-full px-3 sm:px-4 md:px-6">
+        <div className="flex items-center h-16 gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {location.pathname === '/dashboard' && onMenuClick && (
+              <button
+                onClick={onMenuClick}
+                className="md:hidden h-10 w-10 flex items-center justify-center rounded-lg transition-colors"
+                title="Toggle menu"
+              >
+                <FiMenu size={20} className="text-white" />
+              </button>
+            )}
+            <Link to="/" className="flex items-center group">
+            </Link>
+          </div>
 
-          <div className="flex items-center space-x-2 absolute right-0">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1">
             {currentUser ? (
               <>
-                <button
-                  className="p-2.5 rounded-xl bg-gray-700/50 text-gray-300 hover:bg-primary-600 hover:text-white transition-all backdrop-blur-sm"
-                  title={currentUser.email}
-                >
-                  <FiUser size={20} />
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 rounded-xl bg-gray-700/50 text-gray-300 hover:bg-red-600 hover:text-white transition-all backdrop-blur-sm"
-                  title="Logout"
-                >
-                  <FiLogOut size={20} />
-                </button>
               </>
             ) : (
               <>
                 {location.pathname !== '/login' && (
                   <Link
                     to="/login"
-                    className="text-gray-300 hover:text-primary-400 transition-colors px-4 py-2 rounded-xl hover:bg-gray-700/30"
+                    className="text-xs sm:text-sm text-gray-400 hover:text-yellow-400 transition-colors px-3 py-2 rounded-lg"
                   >
                     Login
                   </Link>
@@ -57,7 +52,7 @@ const Navbar = () => {
                 {location.pathname !== '/register' && (
                   <Link
                     to="/register"
-                    className="btn-primary"
+                    className="btn-primary text-xs sm:text-sm py-2 px-3"
                   >
                     Sign Up
                   </Link>
@@ -65,6 +60,20 @@ const Navbar = () => {
               </>
             )}
           </div>
+
+          {currentUser && (
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <span className="text-xs sm:text-sm text-gray-300">
+                Welcome back, {currentUser.displayName || currentUser.email?.split('@')[0] || 'User'}
+              </span>
+              <button
+                className="h-10 w-10 rounded-full flex items-center justify-center text-white hover:text-yellow-400 transition-colors"
+                title={currentUser.email}
+              >
+                <FiUser size={20} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

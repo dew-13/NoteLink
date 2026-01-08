@@ -52,32 +52,32 @@ const Register = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-4">
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 md:px-6 py-6 sm:py-8 bg-black">
+      <div className="w-full max-w-sm space-y-3 sm:space-y-4">
         <div className="text-center">
-          <h2 className="text-2xl font-extrabold text-white">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
             Create Account
           </h2>
-          <p className="mt-1 text-sm text-gray-200">
+          <p className="mt-1 text-xs sm:text-sm text-gray-200">
             Start organizing your notes today
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-[#262a4a]/80 to-[#1e2139]/80 backdrop-blur-sm py-5 px-6 shadow-2xl rounded-2xl border border-gray-700/50">
+        <div className="backdrop-blur-sm py-5 sm:py-6 px-4 sm:px-6 shadow-2xl rounded-2xl border border-gray-800">
           {error && (
-            <div className="mb-4 bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-xl">
+            <div className="mb-4 bg-gray-800 border border-gray-700 text-gray-200 px-4 py-3 rounded-xl text-xs sm:text-sm">
               {error}
             </div>
           )}
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
+              <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-white mb-1.5">
                 Email address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="text-gray-400" />
+                  <FiMail className="text-gray-400" size={18} />
                 </div>
                 <input
                   id="email"
@@ -87,19 +87,19 @@ const Register = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm sm:text-base"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
+              <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-white mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="text-gray-400" />
+                  <FiLock className="text-gray-400" size={18} />
                 </div>
                 <input
                   id="password"
@@ -109,19 +109,19 @@ const Register = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm sm:text-base"
                   placeholder="Enter your password"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1">
+              <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-white mb-1.5">
                 Confirm Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="text-gray-400" />
+                  <FiLock className="text-gray-400" size={18} />
                 </div>
                 <input
                   id="confirmPassword"
@@ -131,7 +131,7 @@ const Register = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm sm:text-base"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -141,20 +141,20 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary"
+                className="w-full btn-primary min-h-[44px] text-sm sm:text-base"
               >
                 {loading ? 'Creating account...' : 'Sign up'}
               </button>
             </div>
           </form>
 
-          <div className="mt-4">
+          <div className="mt-4 sm:mt-5">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700/50" />
+                <div className="w-full border-t border-gray-800" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-gradient-to-br from-[#262a4a]/80 to-[#1e2139]/80 text-gray-200">Or continue with</span>
+              <div className="relative flex justify-center text-xs sm:text-sm">
+                <span className="px-3 text-gray-400 bg-black">Or continue with</span>
               </div>
             </div>
 
@@ -162,7 +162,7 @@ const Register = () => {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full flex items-center justify-center space-x-2 bg-gray-700/50 border border-gray-600/50 rounded-xl px-4 py-2.5 text-white hover:bg-gray-600/50 transition-all backdrop-blur-sm"
+                className="w-full flex items-center justify-center space-x-2 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 sm:py-3 text-white hover:bg-gray-700 transition-all backdrop-blur-sm min-h-[44px] text-xs sm:text-sm"
               >
                 <FcGoogle size={20} />
                 <span>Sign up with Google</span>
@@ -170,10 +170,10 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-200">
+          <div className="mt-4 sm:mt-5 text-center">
+            <p className="text-xs sm:text-sm text-gray-200">
               Already have an account?{' '}
-              <Link to="/login" className="font-medium text-[#3B82F6] hover:text-[#60A5FA] transition-colors">
+              <Link to="/login" className="font-medium text-yellow-400 hover:text-yellow-500 transition-colors">
                 Sign in
               </Link>
             </p>

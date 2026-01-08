@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
@@ -12,12 +12,13 @@ import NotFound from './pages/NotFound';
 function AppContent() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
       {!isAuthPage && (
         <div className="fixed top-0 left-0 right-0 z-50">
-          <Navbar />
+          <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         </div>
       )}
       <div className={isAuthPage ? 'flex-1' : 'pt-16 flex-1'}>
@@ -29,7 +30,7 @@ function AppContent() {
             path="/dashboard"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <Dashboard sidebarOpen={sidebarOpen} onCloseSidebar={() => setSidebarOpen(false)} />
               </PrivateRoute>
             }
           />

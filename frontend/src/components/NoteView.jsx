@@ -6,12 +6,7 @@ const NoteView = ({ note, onClose, onEdit, onDelete, onArchive }) => {
   if (!note) return null;
 
   const getCategoryColor = (category) => {
-    const colors = {
-      personal: 'bg-green-500/20 text-green-400 border-green-500/30',
-      work: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      ideas: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    };
-    return colors[category] || 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    return 'bg-yellow-400/20 text-yellow-400 border-yellow-400/30';
   };
 
   const handleDelete = () => {
@@ -22,24 +17,24 @@ const NoteView = ({ note, onClose, onEdit, onDelete, onArchive }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full px-3 sm:px-4 md:px-6">
       {/* Header with Back Button */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <button
           onClick={onClose}
-          className="flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors"
+          className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors text-sm sm:text-base"
         >
-          <FiArrowLeft size={20} />
+          <FiArrowLeft size={18} className="sm:w-5 sm:h-5" />
           <span>Back to Notes</span>
         </button>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => onEdit(note)}
-            className="p-2.5 bg-primary-600/20 hover:bg-primary-600/30 text-primary-400 rounded-lg transition-colors"
+            className="h-10 w-10 flex items-center justify-center bg-yellow-400/20 hover:bg-yellow-400/30 text-yellow-400 rounded-lg transition-colors"
             title="Edit Note"
           >
-            <FiEdit2 size={20} />
+            <FiEdit2 size={18} />
           </button>
           <button
             onClick={() => {
@@ -48,32 +43,32 @@ const NoteView = ({ note, onClose, onEdit, onDelete, onArchive }) => {
                 onClose();
               }
             }}
-            className="p-2.5 bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 rounded-lg transition-colors"
+            className="h-10 w-10 flex items-center justify-center bg-gray-700/20 hover:bg-gray-700/30 text-gray-400 rounded-lg transition-colors"
             title="Archive Note"
           >
-            <FiArchive size={20} />
+            <FiArchive size={18} />
           </button>
           <button
             onClick={handleDelete}
-            className="p-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors"
+            className="h-10 w-10 flex items-center justify-center bg-gray-700/20 hover:bg-gray-700/30 text-gray-400 rounded-lg transition-colors"
             title="Delete Note"
           >
-            <FiTrash2 size={20} />
+            <FiTrash2 size={18} />
           </button>
         </div>
       </div>
 
       {/* Note Content Card */}
-      <div className="bg-[#272738] rounded-2xl shadow-xl p-8 border border-gray-700/30">
+      <div className="rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 border border-gray-800 backdrop-blur-sm">
         {/* Category and Important Badge */}
-        <div className="flex items-center space-x-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           {note.category && (
-            <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
+            <span className={`inline-block px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium border ${getCategoryColor(note.category)}`}>
               {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
             </span>
           )}
           {note.isImportant && (
-            <span className="inline-flex items-center space-x-1 px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs font-medium border border-yellow-500/30">
+            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs sm:text-sm font-medium border border-yellow-500/30">
               <FaStar size={12} />
               <span>Important</span>
             </span>
@@ -81,29 +76,25 @@ const NoteView = ({ note, onClose, onEdit, onDelete, onArchive }) => {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-gray-100 mb-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100 mb-3 sm:mb-4 break-words">
           {note.title}
         </h1>
 
         {/* Date */}
-        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-8 pb-6 border-b border-gray-700/30">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-800">
           <span>
             Created: {new Date(note.createdAt).toLocaleDateString('en-US', {
-              month: 'long',
+              month: 'short',
               day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+              year: 'numeric'
             })}
           </span>
           {note.updatedAt !== note.createdAt && (
-            <span>
+            <span className="hidden sm:inline">
               • Updated: {new Date(note.updatedAt).toLocaleDateString('en-US', {
-                month: 'long',
+                month: 'short',
                 day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                year: 'numeric'
               })}
             </span>
           )}
@@ -112,11 +103,11 @@ const NoteView = ({ note, onClose, onEdit, onDelete, onArchive }) => {
         {/* Description */}
         <div className="prose prose-invert max-w-none">
           {note.description ? (
-            <p className="text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
+            <p className="text-gray-300 text-base sm:text-lg leading-relaxed whitespace-pre-wrap break-words">
               {note.description}
             </p>
           ) : (
-            <p className="text-gray-500 italic">No description provided.</p>
+            <p className="text-gray-500 italic text-sm sm:text-base">No description provided.</p>
           )}
         </div>
       </div>

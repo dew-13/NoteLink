@@ -30,26 +30,26 @@ const NoteModal = ({ note, isOpen, onClose, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-gradient-to-br from-[#262a4a]/95 to-[#1e2139]/95 backdrop-blur-xl rounded-2xl max-w-2xl w-full border border-gray-700/50 shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+      <div className="backdrop-blur-xl rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-800 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
-          <h2 className="text-2xl font-bold text-gray-100">
+        <div className="sticky top-0 flex items-center justify-between p-4 sm:p-6 border-b border-gray-800 backdrop-blur">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-100">
             {note ? 'Edit Note' : 'Create Note'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors text-gray-400 hover:text-gray-200"
+            className="h-10 w-10 flex items-center justify-center hover:bg-gray-700/50 rounded-lg transition-colors text-gray-400 hover:text-gray-200"
           >
             <FiX size={24} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="title" className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
               Title *
             </label>
             <input
@@ -57,7 +57,7 @@ const NoteModal = ({ note, isOpen, onClose, onSave }) => {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder-gray-500"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter note title..."
               required
               autoFocus
@@ -66,31 +66,31 @@ const NoteModal = ({ note, isOpen, onClose, onSave }) => {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="description" className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
               Description
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder-gray-500 resize-none"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all placeholder-gray-500 resize-none text-sm sm:text-base"
               placeholder="Write your note here..."
               rows={5}
             />
           </div>
 
           {/* Category and Important */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="category" className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
                 Category
               </label>
               <select
                 id="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 bg-[#1a1d35]/60 border border-gray-700/50 text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all text-sm sm:text-base"
               >
                 <option value="personal">📝 Personal</option>
                 <option value="work">💼 Work</option>
@@ -100,16 +100,16 @@ const NoteModal = ({ note, isOpen, onClose, onSave }) => {
 
             {/* Important */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
                 Important
               </label>
               <button
                 type="button"
                 onClick={() => setIsImportant(!isImportant)}
-                className={`w-full px-4 py-3 rounded-xl border transition-all flex items-center justify-center space-x-2 ${
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border transition-all flex items-center justify-center gap-2 text-sm sm:text-base ${
                   isImportant
-                    ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-                    : 'bg-[#1a1d35]/60 border-gray-700/50 text-gray-400 hover:border-yellow-500/30'
+                    ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-400'
+                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-yellow-400/30'
                 }`}
               >
                 {isImportant ? (
@@ -128,18 +128,18 @@ const NoteModal = ({ note, isOpen, onClose, onSave }) => {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 font-medium rounded-xl transition-all"
+              className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-xl transition-all text-sm sm:text-base"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim()}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-medium rounded-xl transition-all shadow-lg shadow-primary-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-medium rounded-xl transition-all shadow-lg shadow-yellow-400/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {note ? 'Update' : 'Create'}
             </button>

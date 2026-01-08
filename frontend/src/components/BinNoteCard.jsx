@@ -4,14 +4,7 @@ import { FaStar } from 'react-icons/fa';
 
 const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) => {
   const getCategoryColor = (category) => {
-    const colors = {
-      personal: 'bg-green-500/20 text-green-400 border-green-500/30',
-      work: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      ideas: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      important: 'bg-red-500/20 text-red-400 border-red-500/30',
-      archived: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-    };
-    return colors[category] || 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    return 'bg-yellow-400/20 text-yellow-400 border-yellow-400/30';
   };
 
   const getDaysRemaining = () => {
@@ -26,39 +19,38 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
   if (viewMode === 'list') {
     return (
       <div className="card relative group opacity-70 hover:opacity-100 transition-opacity">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-start justify-between gap-2 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               {note.category && (
-                <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
+                <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
                   {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
                 </span>
               )}
               {note.isImportant && (
-                <FaStar className="text-yellow-400" size={16} title="Important" />
+                <FaStar className="text-yellow-400 text-sm sm:text-base" title="Important" />
               )}
-              <span className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-2 py-1">
-                {getDaysRemaining()} day{getDaysRemaining() !== 1 ? 's' : ''} left
+              <span className="text-xs text-gray-400 bg-gray-700/20 border border-gray-700/50 rounded-lg px-2 py-0.5">
+                {getDaysRemaining()}d
               </span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-100 mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1 truncate">
               {note.title}
             </h3>
-            <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">
+            <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
               {note.description || 'No description'}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onRestore(note.id);
               }}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg transition-colors"
+              className="h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-700/30 rounded transition-colors"
               title="Restore note"
             >
               <FiRotateCcw size={16} />
-              <span className="text-sm font-medium">Restore</span>
             </button>
             <button
               onClick={(e) => {
@@ -67,11 +59,10 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
                   onPermanentDelete(note.id);
                 }
               }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors"
+              className="h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-700/30 rounded transition-colors"
               title="Permanently delete"
             >
               <FiTrash2 size={16} />
-              <span className="text-sm font-medium">Delete</span>
             </button>
           </div>
         </div>
@@ -81,68 +72,65 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
 
   return (
     <div className="card relative group opacity-70 hover:opacity-100 transition-opacity">
-      <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
+      <div className="absolute top-2 sm:top-3 md:top-4 right-2 sm:right-3 md:right-4">
         {note.isImportant && (
-          <FaStar className="text-yellow-400" size={16} title="Important" />
+          <FaStar className="text-yellow-400 text-sm sm:text-base" title="Important" />
         )}
       </div>
       
       <div>
         {note.category && (
-          <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium mb-3 border ${getCategoryColor(note.category)}`}>
+          <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium mb-2 sm:mb-3 border ${getCategoryColor(note.category)}`}>
             {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
           </span>
         )}
-        <h3 className="text-lg font-semibold text-gray-100 mb-2 pr-8">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1 sm:mb-2 line-clamp-2">
           {note.title}
         </h3>
-        <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-3">
+        <p className="text-gray-400 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-2 sm:mb-3">
           {note.description || 'No description'}
         </p>
 
         {/* Days Remaining */}
-        <div className="mb-3 text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+        <div className="mb-2 sm:mb-3 text-xs text-gray-400 bg-gray-700/20 border border-gray-700/50 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
           <span className="font-semibold">
-            {getDaysRemaining()} day{getDaysRemaining() !== 1 ? 's' : ''} remaining
-          </span> until permanent deletion
+            {getDaysRemaining()} day{getDaysRemaining() !== 1 ? 's' : ''}
+          </span> left
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onRestore(note.id);
             }}
-            className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-yellow-400/20 hover:bg-yellow-400/30 text-yellow-400 rounded-lg transition-colors text-xs sm:text-sm"
             title="Restore note"
           >
             <FiRotateCcw size={16} />
-            <span className="text-sm font-medium">Restore</span>
+            <span className="hidden sm:inline">Restore</span>
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (window.confirm('Permanently delete this note? This action cannot be undone!')) {
+              if (window.confirm('Permanently delete? This cannot be undone!')) {
                 onPermanentDelete(note.id);
               }
             }}
-            className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-700/20 hover:bg-gray-700/30 text-gray-400 rounded-lg transition-colors text-xs sm:text-sm"
             title="Permanently delete"
           >
             <FiTrash2 size={16} />
-            <span className="text-sm font-medium">Delete</span>
+            <span className="hidden sm:inline">Delete</span>
           </button>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-gray-700/30 flex items-center justify-between text-xs text-gray-500">
-          <span>
-            Deleted: {new Date(note.deletedAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric'
-            })}
-          </span>
+        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-800 text-xs text-gray-500">
+          Deleted {new Date(note.deletedAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          })}
         </div>
       </div>
     </div>

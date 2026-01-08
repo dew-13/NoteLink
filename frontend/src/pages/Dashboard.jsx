@@ -7,7 +7,7 @@ import BinNoteCard from '../components/BinNoteCard';
 import Sidebar from '../components/Sidebar';
 import { getNotes, createNote, updateNote, deleteNote, getBinNotes, restoreNote, permanentlyDeleteNote, archiveNote } from '../services/noteService';
 
-const Dashboard = () => {
+const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
   const [notes, setNotes] = useState([]);
   const [binNotes, setBinNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     fetchNotes();
@@ -61,6 +62,14 @@ const Dashboard = () => {
       setFilteredNotes(filtered);
     }
   }, [searchQuery, notes, binNotes, activeCategory]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsSearchOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const fetchNotes = async () => {
     try {
@@ -187,16 +196,16 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="fixed left-0 top-16 bottom-0 z-40">
-        <Sidebar 
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          notesCount={notesCount}
-        />
-      </div>
+    <div className="flex min-h-screen bg-black">
+      <Sidebar 
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        notesCount={notesCount}
+        isOpen={sidebarOpen}
+        onClose={onCloseSidebar}
+      />
       
-      <div className="flex-1 ml-20 px-8 py-8 bg-[#1f1c28] min-h-screen">
+      <div className="flex-1 px-3 sm:px-4 md:px-8 py-6 md:py-8 bg-black min-h-screen overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {viewingNote ? (
             <NoteView 
@@ -208,87 +217,125 @@ const Dashboard = () => {
             />
           ) : (
             <>
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-100 mb-2">
-                      {activeCategory === 'all' 
-                        ? 'All Notes' 
-                        : activeCategory === 'personal'
-                        ? '📝 Personal'
-                        : activeCategory === 'work'
-                        ? '💼 Work'
-                        : activeCategory === 'ideas'
-                        ? '💡 Ideas'
-                        : activeCategory === 'important'
-                        ? '⭐ Important'
-                        : activeCategory === 'archived'
-                        ? '📦 Archived'
-                        : activeCategory === 'bin'
-                        ? '🗑️ Bin'
-                        : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
-                    </h1>
-                    <p className="text-gray-400 text-sm">
-                      {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'} found
-                      {activeCategory === 'bin' && filteredNotes.length > 0 && (
-                        <span className="ml-2 text-red-400">• Notes will be permanently deleted after 30 days</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    {/* View Toggle */}
-                    <div className="flex items-center bg-[#262a4a]/50 rounded-xl p-1">
-                      <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-lg transition-all ${
-                          viewMode === 'grid'
-                            ? 'bg-[#3B82F6] text-white'
-                            : 'text-gray-400 hover:text-white'
-                        }`}
-                        title="Grid View"
-                      >
-                        <FiGrid size={20} />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-lg transition-all ${
-                          viewMode === 'list'
-                            ? 'bg-[#3B82F6] text-white'
-                            : 'text-gray-400 hover:text-white'
-                        }`}
-                        title="List View"
-                      >
-                        <FiList size={20} />
-                      </button>
+              {/* Stats Dashboard */}
+              <div className="mb-6 sm:mb-8 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-800 backdrop-blur-sm">
+                <div className="flex items-center justify-around gap-2 sm:gap-4 md:gap-6">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
+                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
+                        {notes.filter(n => n.category === 'personal').length}
+                      </p>
                     </div>
-                    {activeCategory !== 'bin' && (
-                      <button
-                        onClick={handleCreateNote}
-                        className="btn-primary flex items-center space-x-2"
-                      >
-                        <FiPlus />
-                        <span>New Note</span>
-                      </button>
-                    )}
+                    <p className="text-xs text-gray-400">Personal</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
+                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
+                        {notes.filter(n => n.category === 'work').length}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-400">Work</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
+                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
+                        {notes.filter(n => n.category === 'ideas').length}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-400">Ideas</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
+                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
+                        {notes.filter(n => n.isImportant).length}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-400">Important</p>
                   </div>
                 </div>
-                
-                <div className="relative max-w-md">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FiSearch className="text-gray-500" />
+              </div>
+
+              <div className="mb-6 md:mb-8">
+                <div className="flex flex-col gap-4 mb-4 md:mb-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h1 className="text-sm sm:text-2xl md:text-3xl font-bold text-gray-100 mb-1 md:mb-2 truncate">
+                        {activeCategory === 'all' 
+                          ? 'All Notes' 
+                          : activeCategory === 'personal'
+                          ? '📝 Personal'
+                          : activeCategory === 'work'
+                          ? '💼 Work'
+                          : activeCategory === 'ideas'
+                          ? '💡 Ideas'
+                          : activeCategory === 'important'
+                          ? '⭐ Important'
+                          : activeCategory === 'archived'
+                          ? '📦 Archived'
+                          : activeCategory === 'bin'
+                          ? '🗑️ Bin'
+                          : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
+                      </h1>
+                      <p className="text-gray-400 text-xs sm:text-sm">
+                        {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'} found
+                        {activeCategory === 'bin' && filteredNotes.length > 0 && (
+                          <span className="ml-2 text-gray-400 block sm:inline">• Deleted after 30 days</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {/* Search Icon */}
+                      <button
+                        onClick={() => setIsSearchOpen(true)}
+                        className="h-6 w-6 rounded-md transition-all flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800"
+                        title="Search notes"
+                      >
+                        <FiSearch size={16} />
+                      </button>
+                      {/* View Toggle */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => setViewMode('grid')}
+                          className={`h-6 w-6 rounded-md transition-all flex items-center justify-center ${
+                            viewMode === 'grid'
+                              ? 'bg-yellow-400 text-black'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          title="Grid View"
+                        >
+                          <FiGrid size={14} />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`h-6 w-6 rounded-md transition-all flex items-center justify-center ${
+                            viewMode === 'list'
+                              ? 'bg-yellow-400 text-black'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          title="List View"
+                        >
+                          <FiList size={14} />
+                        </button>
+                      </div>
+                      {activeCategory !== 'bin' && (
+                        <button
+                          onClick={handleCreateNote}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg flex items-center justify-center h-6 w-6 shrink-0 transition-all"
+                          title="New Note"
+                        >
+                          <FiPlus size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Search notes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="input-field pl-11"
-                  />
                 </div>
               </div>
 
               {error && (
-                <div className="mb-4 bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-xl">
+                <div className="mb-4 bg-gray-800 border border-gray-700 text-gray-200 px-4 py-3 rounded-xl">
                   {error}
                 </div>
               )}
@@ -299,7 +346,7 @@ const Dashboard = () => {
                 </div>
               ) : filteredNotes.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="bg-gradient-to-br from-[#262a4a]/50 to-[#1e2139]/50 backdrop-blur-sm rounded-2xl p-12 border border-gray-700/30">
+                  <div className="backdrop-blur-sm rounded-2xl p-12">
                     <p className="text-gray-400 text-lg">
                       {searchQuery
                         ? 'No notes found matching your search.'
@@ -314,8 +361,8 @@ const Dashboard = () => {
               ) : activeCategory === 'bin' ? (
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                    : 'flex flex-col space-y-4'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
+                    : 'flex flex-col gap-3 sm:gap-4'
                 }>
                   {filteredNotes.map((note) => (
                     <BinNoteCard
@@ -330,8 +377,8 @@ const Dashboard = () => {
               ) : (
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                    : 'flex flex-col space-y-4'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
+                    : 'flex flex-col gap-3 sm:gap-4'
                 }>
                   {filteredNotes.map((note) => (
                     <NoteCard
@@ -357,6 +404,35 @@ const Dashboard = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveNote}
       />
+
+      {/* Search Modal */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 z-50 pt-20">
+          <div className="w-full sm:max-w-2xl">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-500 text-lg sm:text-xl" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search notes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setIsSearchOpen(false);
+                }}
+                className="w-full pl-12 sm:pl-14 pr-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-base placeholder-gray-500"
+                autoFocus
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => setIsSearchOpen(false)}
+            className="fixed inset-0 z-40"
+            aria-label="Close search"
+          />
+        </div>
+      )}
     </div>
   );
 };
