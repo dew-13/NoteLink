@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const dialogflow = require('@google-cloud/dialogflow');
-const { v4: uuidv4 } = require('uuid');
+
+// Dynamic import for ESM module
+let uuidv4;
+(async () => {
+  const { v4 } = await import('uuid');
+  uuidv4 = v4;
+})();
 
 // Create a Dialogflow session client
 // Make sure you have GOOGLE_APPLICATION_CREDENTIALS environment variable set

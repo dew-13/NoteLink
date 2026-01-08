@@ -5,15 +5,18 @@ FROM node:18-alpine as build
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
+
+# Copy .env file for environment variables
+COPY .env ./
 
 # Copy application files
 COPY . .
 
-# Build the application
+# Build the application with environment variables embedded
 RUN npm run build
 
 # Use nginx for serving the static files
