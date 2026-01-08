@@ -36,7 +36,7 @@
   }
   
   .card {
-    @apply bg-gray-900 rounded-2xl shadow-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-2xl hover:shadow-yellow-400/20 transition-all duration-300 border border-gray-800 backdrop-blur-sm;
+    @apply rounded-2xl shadow-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-2xl hover:shadow-yellow-400/20 transition-all duration-300 border border-yellow-400 backdrop-blur-sm;
   }
 
   .sidebar-item {
@@ -109,3 +109,17 @@
   }
 }
 
+@keyframes borderPulse {
+  0% {
+    border-color: rgba(250, 204, 21, 0.3);
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.3);
+  }
+  50% {
+    border-color: rgba(250, 204, 21, 0.7);
+    box-shadow: 0 0 12px 0 rgba(250, 204, 21, 0.4);
+  }
+  100% {
+    border-color: rgba(250, 204, 21, 0.5);
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+  }
+}

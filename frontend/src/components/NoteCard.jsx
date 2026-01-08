@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { FiX, FiArchive } from 'react-icons/fi';
+import { FiX, FiArchive, FiUser, FiBriefcase } from 'react-icons/fi';
+import { HiLightBulb } from 'react-icons/hi';
 import { FaStar } from 'react-icons/fa';
 
 const NoteCard = ({ note, onEdit, onDelete, onView, onArchive, viewMode = 'grid' }) => {
   const [showActions, setShowActions] = useState(false);
 
-  const getCategoryColor = (category) => {
-    return 'bg-yellow-400/20 text-yellow-400 border-yellow-400/30';
+  const getCategoryIcon = (category) => {
+    switch (category) {
+      case 'personal':
+        return <FiUser size={16} />;
+      case 'work':
+        return <FiBriefcase size={16} />;
+      case 'ideas':
+        return <HiLightBulb size={16} />;
+      default:
+        return null;
+    }
   };
 
   if (viewMode === 'list') {
@@ -16,9 +26,9 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onArchive, viewMode = 'grid'
           <div onClick={() => onView ? onView(note) : onEdit(note)} className="cursor-pointer flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {note.category && (
-                <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
-                  {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
-                </span>
+                <div className="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-yellow-400/20 text-yellow-400 border border-yellow-400/30" title={note.category}>
+                  {getCategoryIcon(note.category)}
+                </div>
               )}
               {note.isImportant && (
                 <FaStar className="text-yellow-400 text-sm sm:text-base" title="Important" />
@@ -99,13 +109,13 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onArchive, viewMode = 'grid'
         </button>
       </div>
       
-      <div onClick={() => onView ? onView(note) : onEdit(note)} className="cursor-pointer">
-        {note.category && (
-          <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium mb-2 sm:mb-3 border ${getCategoryColor(note.category)}`}>
-            {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
-          </span>
-        )}
-        <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1 sm:mb-2 pr-16 line-clamp-2">
+        <div onClick={() => onView ? onView(note) : onEdit(note)} className="cursor-pointer">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
+            {note.category && (
+              <div className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-yellow-400/20 text-yellow-400 border border-yellow-400/30" title={note.category}>
+                {getCategoryIcon(note.category)}
+              </div>
+            )}        </div>        <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1 sm:mb-2 line-clamp-2">
           {note.title}
         </h3>
         <p className="text-gray-400 text-xs sm:text-sm line-clamp-3 leading-relaxed">

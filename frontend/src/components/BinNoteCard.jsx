@@ -1,10 +1,20 @@
 import React from 'react';
-import { FiRotateCcw, FiTrash2 } from 'react-icons/fi';
+import { FiRotateCcw, FiTrash2, FiUser, FiBriefcase } from 'react-icons/fi';
+import { HiLightBulb } from 'react-icons/hi';
 import { FaStar } from 'react-icons/fa';
 
 const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) => {
-  const getCategoryColor = (category) => {
-    return 'bg-yellow-400/20 text-yellow-400 border-yellow-400/30';
+  const getCategoryIcon = (category) => {
+    switch (category) {
+      case 'personal':
+        return <FiUser size={16} />;
+      case 'work':
+        return <FiBriefcase size={16} />;
+      case 'ideas':
+        return <HiLightBulb size={16} />;
+      default:
+        return null;
+    }
   };
 
   const getDaysRemaining = () => {
@@ -23,14 +33,14 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {note.category && (
-                <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium border ${getCategoryColor(note.category)}`}>
-                  {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
-                </span>
+                <div className="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-yellow-400/20 text-yellow-400 border border-yellow-400/30" title={note.category}>
+                  {getCategoryIcon(note.category)}
+                </div>
               )}
               {note.isImportant && (
                 <FaStar className="text-yellow-400 text-sm sm:text-base" title="Important" />
               )}
-              <span className="text-xs text-gray-400 bg-gray-700/20 border border-gray-700/50 rounded-lg px-2 py-0.5">
+              <span className="text-xs text-gray-400 border border-gray-700/50 rounded-lg px-2 py-0.5">
                 {getDaysRemaining()}d
               </span>
             </div>
@@ -80,9 +90,9 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
       
       <div>
         {note.category && (
-          <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs font-medium mb-2 sm:mb-3 border ${getCategoryColor(note.category)}`}>
-            {note.category.charAt(0).toUpperCase() + note.category.slice(1)}
-          </span>
+          <div className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 mb-2 sm:mb-3" title={note.category}>
+            {getCategoryIcon(note.category)}
+          </div>
         )}
         <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1 sm:mb-2 line-clamp-2">
           {note.title}
@@ -92,7 +102,7 @@ const BinNoteCard = ({ note, onRestore, onPermanentDelete, viewMode = 'grid' }) 
         </p>
 
         {/* Days Remaining */}
-        <div className="mb-2 sm:mb-3 text-xs text-gray-400 bg-gray-700/20 border border-gray-700/50 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+        <div className="mb-2 sm:mb-3 text-xs text-gray-400 border border-gray-700/50 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
           <span className="font-semibold">
             {getDaysRemaining()} day{getDaysRemaining() !== 1 ? 's' : ''}
           </span> left

@@ -7,6 +7,88 @@ import BinNoteCard from '../components/BinNoteCard';
 import Sidebar from '../components/Sidebar';
 import { getNotes, createNote, updateNote, deleteNote, getBinNotes, restoreNote, permanentlyDeleteNote, archiveNote } from '../services/noteService';
 
+// Animated Counter Component with SVG Ring
+const AnimatedStatCircle = ({ finalValue, label = '', maxValue = 10 }) => {
+  const [count, setCount] = useState(0);
+  const [strokeOffset, setStrokeOffset] = useState(100);
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    const duration = 1200;
+    const steps = 30;
+    const stepDuration = duration / steps;
+    let currentStep = 0;
+
+    const counter = setInterval(() => {
+      currentStep++;
+      const progress = Math.min(currentStep / steps, 1);
+      const currentCount = Math.round(progress * finalValue);
+      const offset = circumference * (1 - progress * 0.8);
+      
+      setCount(currentCount);
+      setStrokeOffset(offset);
+      
+      if (currentStep >= steps) clearInterval(counter);
+    }, stepDuration);
+
+    return () => clearInterval(counter);
+  }, [finalValue, circumference]);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative h-32 w-32 md:h-36 md:w-36">
+        <svg 
+          className="absolute inset-0" 
+          width="100%" 
+          height="100%" 
+          viewBox="0 0 120 120"
+        >
+          {/* Background circle */}
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke="rgba(250, 204, 21, 0.15)"
+            strokeWidth="6"
+          />
+          
+          {/* Animated progress circle */}
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke="url(#grad)"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeOffset}
+            style={{
+              transition: 'stroke-dashoffset 0.05s linear',
+            }}
+          />
+          
+          {/* Gradient definition */}
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FBBF24" />
+              <stop offset="100%" stopColor="#F59E0B" />
+            </linearGradient>
+          </defs>
+        </svg>
+        
+        {/* Counter and Label inside circle */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+          <p className="text-2xl md:text-3xl font-bold text-yellow-400">{count}</p>
+          <p className="text-xs text-gray-300 font-medium">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
   const [notes, setNotes] = useState([]);
   const [binNotes, setBinNotes] = useState([]);
@@ -37,6 +119,8 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
             note.description.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
+      // Sort by date: newest first
+      filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       setFilteredNotes(filtered);
     } else {
       // Filter regular notes
@@ -59,6 +143,8 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
         );
       }
 
+      // Sort by date: newest first
+      filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       setFilteredNotes(filtered);
     }
   }, [searchQuery, notes, binNotes, activeCategory]);
@@ -196,7 +282,7 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       <Sidebar 
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
@@ -205,7 +291,7 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
         onClose={onCloseSidebar}
       />
       
-      <div className="flex-1 px-3 sm:px-4 md:px-8 py-6 md:py-8 bg-black min-h-screen overflow-y-auto">
+      <div className="md:ml-24 px-3 sm:px-4 md:px-8 py-6 md:py-8 bg-black min-h-screen overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {viewingNote ? (
             <NoteView 
@@ -218,42 +304,35 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
           ) : (
             <>
               {/* Stats Dashboard */}
-              <div className="mb-6 sm:mb-8 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-800 backdrop-blur-sm">
-                <div className="flex items-center justify-around gap-2 sm:gap-4 md:gap-6">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
-                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
-                        {notes.filter(n => n.category === 'personal').length}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-400">Personal</p>
+              <div className="mb-6 sm:mb-8 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-10 backdrop-blur-sm">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-around gap-6 sm:gap-8 md:gap-10">
+                  <div className="flex justify-center">
+                    <AnimatedStatCircle 
+                      finalValue={notes.filter(n => n.category === 'personal').length}
+                      label="Personal"
+                      maxValue={10}
+                    />
                   </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
-                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
-                        {notes.filter(n => n.category === 'work').length}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-400">Work</p>
+                  <div className="flex justify-center">
+                    <AnimatedStatCircle 
+                      finalValue={notes.filter(n => n.category === 'work').length}
+                      label="Work"
+                      maxValue={10}
+                    />
                   </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
-                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
-                        {notes.filter(n => n.category === 'ideas').length}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-400">Ideas</p>
+                  <div className="flex justify-center">
+                    <AnimatedStatCircle 
+                      finalValue={notes.filter(n => n.category === 'ideas').length}
+                      label="Ideas"
+                      maxValue={10}
+                    />
                   </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 rounded-full border-2 border-yellow-400/50 flex items-center justify-center">
-                      <p className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400">
-                        {notes.filter(n => n.isImportant).length}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-400">Important</p>
+                  <div className="flex justify-center">
+                    <AnimatedStatCircle 
+                      finalValue={notes.filter(n => n.isImportant).length}
+                      label="Important"
+                      maxValue={10}
+                    />
                   </div>
                 </div>
               </div>
@@ -361,7 +440,7 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
               ) : activeCategory === 'bin' ? (
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
+                    ? 'grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
                     : 'flex flex-col gap-3 sm:gap-4'
                 }>
                   {filteredNotes.map((note) => (
@@ -377,7 +456,7 @@ const Dashboard = ({ sidebarOpen = false, onCloseSidebar = () => {} }) => {
               ) : (
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
+                    ? 'grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6'
                     : 'flex flex-col gap-3 sm:gap-4'
                 }>
                   {filteredNotes.map((note) => (
