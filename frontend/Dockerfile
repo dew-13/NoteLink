@@ -10,13 +10,13 @@ COPY package.json ./
 # Install dependencies
 RUN npm install
 
-# Copy .env file for environment variables
+#copy .env file
 COPY .env ./
 
 # Copy application files
 COPY . .
 
-# Build the application with environment variables embedded
+# Build the application with environment variables
 RUN npm run build
 
 # Use nginx for serving the static files
@@ -33,3 +33,4 @@ EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
+
